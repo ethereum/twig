@@ -38,7 +38,7 @@ extras_require['dev'] = (
 setup(
     name='twig',
     # *IMPORTANT*: Don't manually change the version here. Use `make bump`, as described in readme
-    version='version=0.1.0-alpha.1',
+    version='0.1.0-alpha.2',
     description="""twig: A tool for Ethereum smart contract development.""",
     long_description_markdown_filename='README.md',
     author='Jason Carver',
