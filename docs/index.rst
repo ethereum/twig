@@ -1,7 +1,7 @@
-<PROJECT_NAME>
+twig
 ==============================
 
-<SHORT_DESCRIPTION>
+A tool for Ethereum smart contract development.
 
 Contents
 --------
@@ -9,7 +9,7 @@ Contents
 .. toctree::
     :maxdepth: 3
 
-    <MODULE_NAME>
+    twig
     releases
 
 
