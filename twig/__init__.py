@@ -2,4 +2,4 @@ from pathlib import Path
 
 TWIG_DIR = Path(__file__).parent
 
-CONTRACTS_DIR = TWIG_DIR / 'contracts'
+CONTRACTS_DIR = TWIG_DIR / "contracts"
