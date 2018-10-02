@@ -12,6 +12,7 @@ extras_require = {
         "tox>=2.9.1,<3",
     ],
     'lint': [
+        "black>=18.6b4,<19",
         "flake8==3.4.1",
         "isort>=4.2.15,<5",
     ],
@@ -47,6 +48,9 @@ setup(
     include_package_data=True,
     install_requires=[
         "eth-utils>=1,<2",
+        "ethpm==0.1.3a6",
+        "pytest-ethereum>=0.1.2,<2",
+        "web3[tester]==4.4.1",
     ],
     setup_requires=['setuptools-markdown'],
     python_requires='>=3.5, <4',
