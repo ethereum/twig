@@ -33,22 +33,21 @@ def test_compiler(compiler):
     assert isinstance(compiler.backend, VyperBackend)
 
 
-def test_compiler_creates_valid_registry_package_and_deployment(twig_deployer):
-    registry_package, address = twig_deployer.deploy("registry")
-    w3 = registry_package.w3
-    registry_contract = registry_package.get_contract_instance("registry", address)
+def test_compiler_creates_valid_registry_package_and_deployment(twig_deployer, w3):
+    registry_package = twig_deployer.deploy("registry")
+    registry_contract = registry_package.deployments.get_contract_instance("registry")
     registry_contract.functions.register(b"xxx", w3.eth.accounts[0]).transact()
     actual = registry_contract.functions.lookup(b"xxx").call()
     assert actual == w3.eth.accounts[0]
 
 
 def test_compiler_creates_valid_auction_package_and_deployment(twig_deployer, w3):
-    auction_package, address = twig_deployer.deploy(
+    auction_package = twig_deployer.deploy(
         "simple_open_auction", w3.eth.accounts[0], 100
     )
     w3 = auction_package.w3
-    auction_contract = auction_package.get_contract_instance(
-        "simple_open_auction", address
+    auction_contract = auction_package.deployments.get_contract_instance(
+        "simple_open_auction"
     )
     auction_start = auction_contract.functions.auction_start().call()
     auction_end = auction_contract.functions.auction_end().call()

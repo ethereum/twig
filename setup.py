@@ -48,8 +48,8 @@ setup(
     include_package_data=True,
     install_requires=[
         "eth-utils>=1,<2",
-        "ethpm==0.1.3a6",
-        "pytest-ethereum>=0.1.2,<2",
+        "ethpm==0.1.3a7",
+        "pytest-ethereum==0.1.2-alpha.3",
         "web3[tester]==4.4.1",
     ],
     setup_requires=['setuptools-markdown'],

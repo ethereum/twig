@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from twig import CONTRACTS_DIR
 from web3 import Web3
 
 TEST_CONTRACTS_DIR = Path(__file__).parent / "contracts"
@@ -22,3 +23,8 @@ def tmp_contracts(tmpdir):
         tmp = p.join(contract.name)
         tmp.write(contract.read_text())
     return p
+
+
+@pytest.fixture
+def deployer(twig_deployer):
+    return twig_deployer(CONTRACTS_DIR)
