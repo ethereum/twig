@@ -1,3 +1,10 @@
+# Package Registry implementation
+# *Mostly* compatible with ERC 1319
+# https://github.com/ethereum/EIPs/issues/1319
+# todo:
+# full erc compatibility
+# delete pkgs
+
 # Events
 Release: event({_package: indexed(bytes32), _version: bytes32, _uri: bytes32})
 
@@ -7,10 +14,10 @@ owner: public(address)
 packages: public(
     {
         exists: bool,
-        created_at: timestamp,
-        updated_at: timestamp,
+        createdAt: timestamp,
+        updatedAt: timestamp,
         name: bytes32,
-        release_count: int128,
+        releaseCount: int128,
     }[bytes32]
 )
 
@@ -18,8 +25,8 @@ packages: public(
 releases: public(
     {
         exists: bool,
-        created_at: timestamp,
-        package_id: bytes32,
+        createdAt: timestamp,
+        packageId: bytes32,
         version: bytes32,
         uri: bytes32,
     }[bytes32]
@@ -27,15 +34,15 @@ releases: public(
 
 
 # package_id#release_count => release_id
-package_release_index: bytes32[bytes32]
+packageReleaseIndex: bytes32[bytes32]
 # Total number of packages in registry
-package_count: public(int128)
+packageCount: public(int128)
 # Total number of releases in registry
-release_count: public(int128)
+releaseCount: public(int128)
 # Total package number (int128) => package_id (bytes32)
-package_ids: bytes32[int128]
+packageIds: bytes32[int128]
 # Total release number (int128) => release_id (bytes32)
-release_ids: bytes32[int128]
+releaseIds: bytes32[int128]
 
 EMPTY_BYTES: bytes32
 
@@ -46,128 +53,140 @@ def __init__():
 
 
 @public
-def transfer_owner(new_owner: address):
+def transferOwner(newOwner: address):
     """
     Change ownership of contract.
     """
     assert self.owner == msg.sender
-    self.owner = new_owner
+    self.owner = newOwner
 
 
 @public
-def generate_release_id(name: bytes32, version: bytes32) -> bytes32:
+def getReleaseId(packageName: bytes32, version: bytes32) -> bytes32:
     """
     Return the `release_id` associated with a given package name and release version.
     """
-    release_concat: bytes[64] = concat(name, version)
-    release_id: bytes32 = sha3(release_concat)
-    return release_id
+    releaseConcat: bytes[64] = concat(packageName, version)
+    releaseId: bytes32 = sha3(releaseConcat)
+    assert self.releases[releaseId].exists
+    return releaseId
 
 
 @public
-def get_package_data_by_id(package_id: bytes32) -> (bytes32, int128):
-    """
-    Return a package name and release count associated with a given `package_id`.
-    # todo refactor w/ get_package_data
-    """
-    assert self.packages[package_id].exists == True
-    return (self.packages[package_id].name, self.packages[package_id].release_count)
+def generateReleaseId(packageName: bytes32, version: bytes32) -> bytes32:
+    releaseConcat: bytes[64] = concat(packageName, version)
+    releaseId: bytes32 = sha3(releaseConcat)
+    return releaseId
 
 
 @public
-def get_package_data(name: bytes32) -> (bytes32, int128):
-    """
-    Return a package name and release count associated with a given package name.
-    """
-    package_id: bytes32 =  sha3(name)
-    assert self.packages[package_id].exists == True
-    return (self.packages[package_id].name, self.packages[package_id].release_count)
+def getPackageName(packageId: bytes32) -> bytes32:
+    assert self.packages[packageId].exists
+    return self.packages[packageId].name
 
 
 @public
-def get_release_data_by_id(release_id: bytes32) ->  (bytes32, bytes32, bytes32, bytes32):
-    assert self.releases[release_id].exists == True
-    package_name: bytes32 = self.packages[self.releases[release_id].package_id].name
-    version: bytes32 = self.releases[release_id].version
-    uri: bytes32 = self.releases[release_id].uri
-    return (package_name, version, uri, release_id)
+def getPackageData(packageName: bytes32) -> (bytes32, bytes32, int128):
+    packageId: bytes32 = sha3(packageName)
+    assert self.packages[packageId].exists
+    return (
+        self.packages[packageId].name,
+        packageId,
+        self.packages[packageId].releaseCount,
+    )
 
 
 @public
-def get_release_data(name: bytes32, release_version: bytes32) -> (bytes32, bytes32, bytes32, bytes32):
-    """
-    Return package name, release version, and manifest uri associated with a given `release_id`.
-    todo refactor with get-release_data_by_id
-    """
-    release_id: bytes32 = self.generate_release_id(name, release_version)
-    assert self.releases[release_id].exists == True
-    package_name: bytes32 = self.packages[self.releases[release_id].package_id].name
-    version: bytes32 = self.releases[release_id].version
-    uri: bytes32 = self.releases[release_id].uri
-    return (package_name, version, uri, release_id)
-
-
-@public
-def get_package_id(index: int128) -> bytes32:
-    """
-    Return the `package_id` associated with the package identified by the given index.
-    """
-    assert index <= self.package_count
-    return self.package_ids[index]
-
-
-@public
-def get_release_id(index: int128) -> bytes32:
-    """
-    Return the `release_id` associated with the release identified by the given index.
-    """
-    assert index <= self.release_count
-    return self.release_ids[index]
+def getAllPackageIds(
+    offset: uint256, length: uint256
+) -> (bytes32, bytes32, bytes32, bytes32, bytes32):
+    # WILL ALWAYS RETURN A 5 TUPLE
+    # `length` param is irrelevant, but to ensure understanding of
+    # how this fn is implemented, it must always be set to 5
+    offset_int: int128 = convert(offset, "int128")
+    length_int: int128 = convert(length, "int128")
+    assert length_int == 5
+    assert offset_int <= self.packageCount
+    ids: bytes32[5]
+    for idx in range(offset_int, offset_int + 4):
+        if idx <= self.packageCount:
+            packageId: bytes32 = self.packageIds[idx]
+            ids[(idx - offset_int)] = packageId
+        else:
+            ids[(idx - offset_int)] = self.EMPTY_BYTES
+    return (ids[0], ids[1], ids[2], ids[3], ids[4])
 
 
 @private
-def generate_package_release_id(package_id: bytes32, count: int128) -> bytes32:
+def generatePackageReleaseId(packageId: bytes32, count: int128) -> bytes32:
     """
     Create the package_release_id associated with a given package_id and a release count.
     """
-    count_bytes: bytes32 = convert(count, "bytes32")
-    package_release_tag: bytes[64] = concat(package_id, count_bytes)
-    package_release_id: bytes32 = sha3(package_release_tag)
-    return package_release_id
+    countBytes: bytes32 = convert(count, "bytes32")
+    packageReleaseTag: bytes[64] = concat(packageId, countBytes)
+    packageReleaseId: bytes32 = sha3(packageReleaseTag)
+    return packageReleaseId
 
 
 @public
-def get_release_id_by_package_and_count(name: bytes32, count: int128) -> bytes32:
-    """
-    Return the `release_id` associated with a given package name and release count.
-    """
-    package_id: bytes32 = sha3(name)
-    assert self.packages[package_id].exists
-    assert count <= self.packages[package_id].release_count
-    package_release_id: bytes32 = self.generate_package_release_id(package_id, count)
-    return self.package_release_index[package_release_id]
+def getAllReleaseIds(
+    packageName: bytes32, offset: uint256, length: uint256
+) -> (bytes32, bytes32, bytes32, bytes32, bytes32):
+    # WILL ALWAYS RETURN A 5 TUPLE
+    # `length` param is irrelevant, but to ensure understanding of
+    # how this fn is implemented, it must always be set to 5
+    offset_int: int128 = convert(offset, "int128")
+    length_int: int128 = convert(length, "int128")
+    assert length_int == 5
+    packageId: bytes32 = sha3(packageName)
+    assert self.packages[packageId].exists
+    assert offset_int <= self.packages[packageId].releaseCount
+    ids: bytes32[5]
+    for idx in range(offset_int, offset_int + 4):
+        if idx <= self.packages[packageId].releaseCount:
+            packageReleaseId: bytes32 = self.generatePackageReleaseId(
+                packageId, (idx + 1)
+            )
+            releaseId: bytes32 = self.packageReleaseIndex[packageReleaseId]
+            ids[(idx - offset_int)] = releaseId
+        else:
+            ids[(idx - offset_int)] = self.EMPTY_BYTES
+    return (ids[0], ids[1], ids[2], ids[3], ids[4])
+
+
+@public
+def getReleaseData(releaseId: bytes32) -> (bytes32, bytes32, bytes32):
+    assert self.releases[releaseId].exists
+    packageId: bytes32 = self.releases[releaseId].packageId
+    return (
+        self.packages[packageId].name,
+        self.releases[releaseId].version,
+        self.releases[releaseId].uri,
+    )
 
 
 @private
-def cut_release(
-    release_id: bytes32,
-    package_id: bytes32,
+def cutRelease(
+    releaseId: bytes32,
+    packageId: bytes32,
     version: bytes32,
     uri: bytes32,
     name: bytes32,
 ):
-    self.releases[release_id] = {
+    self.releases[releaseId] = {
         exists: True,
-        created_at: block.timestamp,
-        package_id: package_id,
+        createdAt: block.timestamp,
+        packageId: packageId,
         version: version,
         uri: uri,
     }
-    self.packages[package_id].release_count += 1
-    self.release_ids[self.release_count] = release_id
-    self.release_count += 1
-    package_release_id: bytes32 = self.generate_package_release_id(package_id, self.packages[package_id].release_count)
-    self.package_release_index[package_release_id] = release_id
+    self.packages[packageId].releaseCount += 1
+    self.releaseIds[self.releaseCount] = releaseId
+    self.releaseCount += 1
+    packageReleaseId: bytes32 = self.generatePackageReleaseId(
+        packageId, self.packages[packageId].releaseCount
+    )
+    self.packageReleaseIndex[packageReleaseId] = releaseId
     log.Release(name, version, uri)
 
 
@@ -181,29 +200,29 @@ def release(name: bytes32, version: bytes32, uri: bytes32) -> bytes32:
     assert version != self.EMPTY_BYTES
     assert self.owner == msg.sender
 
-    package_id: bytes32 = sha3(name)
-    release_id: bytes32 = self.generate_release_id(name, version)
+    packageId: bytes32 = sha3(name)
+    releaseId: bytes32 = self.generateReleaseId(name, version)
 
-    if self.packages[package_id].exists == True:
-        self.packages[package_id] = {
+    if self.packages[packageId].exists == True:
+        self.packages[packageId] = {
             exists: True,
-            created_at: self.packages[package_id].created_at,
-            updated_at: block.timestamp,
+            createdAt: self.packages[packageId].createdAt,
+            updatedAt: block.timestamp,
             name: name,
-            release_count: self.packages[package_id].release_count,
+            releaseCount: self.packages[packageId].releaseCount,
         }
-        assert self.releases[release_id].exists == False
-        self.cut_release(release_id, package_id, version, uri, name)
-        return release_id
+        assert self.releases[releaseId].exists == False
+        self.cutRelease(releaseId, packageId, version, uri, name)
+        return releaseId
     else:
-        self.packages[package_id] = {
+        self.packages[packageId] = {
             exists: True,
-            created_at: block.timestamp,
-            updated_at: block.timestamp,
+            createdAt: block.timestamp,
+            updatedAt: block.timestamp,
             name: name,
-            release_count: 0,
+            releaseCount: 0,
         }
-        self.package_ids[self.package_count] = package_id
-        self.package_count += 1
-        self.cut_release(release_id, package_id, version, uri, name)
-        return release_id
+        self.packageIds[self.packageCount] = packageId
+        self.packageCount += 1
+        self.cutRelease(releaseId, packageId, version, uri, name)
+        return releaseId
