@@ -65,24 +65,46 @@ def generate_release_id(name: bytes32, version: bytes32) -> bytes32:
 
 
 @public
-def get_package_data(package_id: bytes32) -> (bytes32, int128):
+def get_package_data_by_id(package_id: bytes32) -> (bytes32, int128):
     """
     Return a package name and release count associated with a given `package_id`.
+    # todo refactor w/ get_package_data
     """
     assert self.packages[package_id].exists == True
     return (self.packages[package_id].name, self.packages[package_id].release_count)
 
 
 @public
-def get_release_data(release_id: bytes32) -> (bytes32, bytes32, bytes32):
+def get_package_data(name: bytes32) -> (bytes32, int128):
     """
-    Return package name, release version, and manifest uri associated with a given `release_id`.
+    Return a package name and release count associated with a given package name.
     """
+    package_id: bytes32 =  sha3(name)
+    assert self.packages[package_id].exists == True
+    return (self.packages[package_id].name, self.packages[package_id].release_count)
+
+
+@public
+def get_release_data_by_id(release_id: bytes32) ->  (bytes32, bytes32, bytes32, bytes32):
     assert self.releases[release_id].exists == True
     package_name: bytes32 = self.packages[self.releases[release_id].package_id].name
     version: bytes32 = self.releases[release_id].version
     uri: bytes32 = self.releases[release_id].uri
-    return (package_name, version, uri)
+    return (package_name, version, uri, release_id)
+
+
+@public
+def get_release_data(name: bytes32, release_version: bytes32) -> (bytes32, bytes32, bytes32, bytes32):
+    """
+    Return package name, release version, and manifest uri associated with a given `release_id`.
+    todo refactor with get-release_data_by_id
+    """
+    release_id: bytes32 = self.generate_release_id(name, release_version)
+    assert self.releases[release_id].exists == True
+    package_name: bytes32 = self.packages[self.releases[release_id].package_id].name
+    version: bytes32 = self.releases[release_id].version
+    uri: bytes32 = self.releases[release_id].uri
+    return (package_name, version, uri, release_id)
 
 
 @public
@@ -105,6 +127,9 @@ def get_release_id(index: int128) -> bytes32:
 
 @private
 def generate_package_release_id(package_id: bytes32, count: int128) -> bytes32:
+    """
+    Create the package_release_id associated with a given package_id and a release count.
+    """
     count_bytes: bytes32 = convert(count, "bytes32")
     package_release_tag: bytes[64] = concat(package_id, count_bytes)
     package_release_id: bytes32 = sha3(package_release_tag)
@@ -141,15 +166,16 @@ def cut_release(
     self.packages[package_id].release_count += 1
     self.release_ids[self.release_count] = release_id
     self.release_count += 1
-    package_release_id: bytes32 = self.generate_package_release_id(
-        package_id, self.packages[package_id].release_count
-    )
+    package_release_id: bytes32 = self.generate_package_release_id(package_id, self.packages[package_id].release_count)
     self.package_release_index[package_release_id] = release_id
     log.Release(name, version, uri)
 
 
 @public
 def release(name: bytes32, version: bytes32, uri: bytes32) -> bytes32:
+    """
+    Return a relase_id after publishing a release.
+    """
     assert uri != self.EMPTY_BYTES
     assert name != self.EMPTY_BYTES
     assert version != self.EMPTY_BYTES

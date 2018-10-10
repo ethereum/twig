@@ -39,12 +39,11 @@ def test_registry_get_package_data_raises_exception_if_package_doesnt_exist(regi
 
 def test_registry_get_package_data(registry, w3):
     registry.functions.release(b"package", b"1.0.0", b"google.com").transact()
-    package_data = registry.functions.get_package_data(PACKAGE_ID).call()
+    package_data = registry.functions.get_package_data(b'package').call()
     assert package_data[0][:7] == b"package"
     assert package_data[1] == 1
-    tx_hash = registry.functions.release(b"package", b"1.0.1", b"google.com").transact()
-    w3.eth.waitForTransactionReceipt(tx_hash)
-    package_data_2 = registry.functions.get_package_data(PACKAGE_ID).call()
+    registry.functions.release(b"package", b"1.0.1", b"google.com").transact()
+    package_data_2 = registry.functions.get_package_data(b'package').call()
     assert package_data_2[0][:7] == b"package"
     assert package_data_2[1] == 2
 
@@ -77,7 +76,7 @@ def test_registry_logs_release_event(registry, w3):
 
 def test_registry_get_release_data(registry):
     registry.functions.release(b"package", b"1.0.0", b"google.com").transact()
-    release_data = registry.functions.get_release_data(V1_RELEASE_ID).call()
+    release_data = registry.functions.get_release_data(b'package', b'1.0.0').call()
     assert release_data[0][:7] == b"package"
     assert release_data[1][:5] == b"1.0.0"
     assert release_data[2][:10] == b"google.com"
@@ -100,7 +99,7 @@ def test_cannot_release_different_uri_for_same_version(registry):
 def test_registry_update_release(registry):
     registry.functions.release(b"package", b"1.0.0", b"google.com").transact()
     registry.functions.release(b"package", b"1.0.1", b"yahoo.com").transact()
-    release_data = registry.functions.get_release_data(V2_RELEASE_ID).call()
+    release_data = registry.functions.get_release_data(b'package', b'1.0.1').call()
     assert release_data[0][:7] == b"package"
     assert release_data[1][:5] == b"1.0.1"
     assert release_data[2][:9] == b"yahoo.com"
