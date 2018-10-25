@@ -5,14 +5,14 @@ Overview
 Start your own Vyper project
 ----------------------------
 
-Twig lets you write tests using ``web3.py`` and ``pytest-ethereum`` against your ``Vyper`` smart contracts.
+Twig lets you write tests using `web3.py <https://github.com/ethereum/web3.py/>`__ and `pytest-ethereum <https://github.com/ethereum/pytest-ethereum>`__ against your `Vyper <https://github.com/ethereum/vyper>`__ smart contracts.
 
 
 Twig setup
 ~~~~~~~~~~
 
 - clone twig repo
-- ``python -m venv venv`` (note: requires python3.6)
+- ``python -m venv venv`` (note: requires >=python3.6)
 - ``. venv/bin/activate``
 - ``pip install -e .``
 
@@ -20,26 +20,24 @@ Twig setup
 Project setup
 ~~~~~~~~~~~~~
 
-.. NOTE:: ``twig/contracts/name_registry.vy`` and ``tests/contracts/test_name_registry.py`` have been included as examples on how to get started, but are safe to delete.
+.. NOTE:: ``contracts/name_registry.vy`` and ``tests/test_name_registry.py`` have been included as examples on how to get started, but are safe to delete.
 
-- create your vyper contract file in ``twig/contracts/``
-  (i.e. ``twig/contracts/example.vy``)
+- create your vyper contract file in ``contracts/``
+  (i.e. ``root/contracts/example.vy``)
 
-- write your vyper contract test file in ``tests/contracts/``
-  (i.e. ``twig/contracts/test_example.py``)
+- write your vyper contract test file in ``tests/``
+  (i.e. ``root/tests/test_example.py``)
 
-- create your contract's ``Deployer`` fixture in your test file.
+- create your contract instance to test against using ``pytest-ethereum``'s `deployer <https://pytest-ethereum.readthedocs.io/en/latest/overview.html#deployer`__. In the following example, the ``my_contract`` fixture returns a ``web3.contract`` instance for testing against.
 
 .. code:: python
 
    @pytest.fixture
-   def example_package(deployer):
-       # returns an ethpm.Package instance loaded with a "example" deployment on the ethpm.Package.w3 instance
-       return deployer.deploy("example")
-    
+   def my_contract_package(deployer):
+       # returns an ethpm.Package instance loaded with a "my_contract" deployment on the ethpm.Package.w3 instance
+       return deployer.deploy("my_contract")
+
    @pytest.fixture
-   def example(example_package):
-       # returns an example web3.contract instance
-       return example_package.deployments.get_instance("example")
-
-
+   def my_contract(my_contract_package):
+       # returns an my_contract web3.contract instance to test against
+       return my_contract_package.deployments.get_instance("my_contract")

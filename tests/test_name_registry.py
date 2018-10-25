@@ -1,9 +1,6 @@
-import pytest
-import logging
-
-logging.disable(logging.CRITICAL)
-
 # Example test file, safe to delete
+
+import pytest
 
 
 @pytest.fixture
