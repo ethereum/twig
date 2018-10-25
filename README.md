@@ -9,7 +9,7 @@
 
 A tool for Ethereum smart contract development.
 
-Read more in the [documentation on ReadTheDocs](https://twig.readthedocs.io/). [View the change log](https://twig.readthedocs.io/en/latest/releases.html).
+Read more in the [documentation on ReadTheDocs](https://twig-eth.readthedocs.io/). [View the change log](https://twig-eth.readthedocs.io/en/latest/releases.html).
 
 ## Quickstart
 
