@@ -5,7 +5,7 @@ import pytest
 from twig import CONTRACTS_DIR
 from web3 import Web3
 
-TEST_CONTRACTS_DIR = Path(__file__).parent / "contracts"
+TEST_CONTRACTS_DIR = Path(__file__).parent / "assets"
 
 
 @pytest.fixture

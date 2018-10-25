@@ -4,7 +4,7 @@
 [![Build Status](https://circleci.com/gh/ethereum/twig.svg?style=shield)](https://circleci.com/gh/ethereum/twig)
 [![PyPI version](https://badge.fury.io/py/twig.svg)](https://badge.fury.io/py/twig)
 [![Python versions](https://img.shields.io/pypi/pyversions/twig.svg)](https://pypi.python.org/pypi/twig)
-[![Docs build](https://readthedocs.org/projects/twig/badge/?version=latest)](http://twig.readthedocs.io/en/latest/?badge=latest)
+[![Docs build](https://readthedocs.org/projects/twig-eth/badge/?version=latest)](https://twig-eth.readthedocs.io/en/latest/)
    
 
 A tool for Ethereum smart contract development.
