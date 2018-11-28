@@ -7,6 +7,8 @@ from web3 import Web3
 
 TEST_CONTRACTS_DIR = Path(__file__).parent / "assets"
 
+pytest_plugins = ["pytest_ethereum.plugins"]
+
 
 @pytest.fixture
 def w3():

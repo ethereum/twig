@@ -8,7 +8,6 @@ from twig.backends import VyperBackend
 from twig.compiler import Compiler
 from twig.filesystem import collect_sources
 
-
 logging.getLogger("evm").setLevel(logging.INFO)
 
 
