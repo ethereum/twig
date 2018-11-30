@@ -1,9 +1,9 @@
 from typing import Any, Dict, Iterable
 
-from eth_utils import to_hex, to_tuple
+from eth_utils import to_tuple
 
 from ethpm.tools import builder as b
-from vyper import compiler
+from vyper import compile_code
 
 
 @to_tuple
@@ -25,12 +25,8 @@ def generate_contract_types(
 
 
 def create_raw_asset_data(source: str) -> Dict[str, Any]:
+    out = compile_code(source, ["bytecode", "abi"])
     return {
-        "abi": compiler.mk_full_signature(source),
-        "evm": {
-            "bytecode": {
-                "object": to_hex(compiler.compile(source)),
-                "linkReferences": {},
-            }
-        },
+        "abi": out["abi"],
+        "evm": {"bytecode": {"object": out["bytecode"], "linkReferences": {}}},
     }
