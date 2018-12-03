@@ -28,9 +28,19 @@ def twig_deployer(compiler, w3):
 
 
 def test_compiler(compiler):
+    assert compiler.output is None
     assert len(compiler.get_source_tree()) == 3
     assert len(compiler.get_contract_types()) == 3
     assert isinstance(compiler.backend, VyperBackend)
+    assert compiler.output is not None
+    auction_data = [
+        data["simple_open_auction"]
+        for data in compiler.output.values()
+        if data.get("simple_open_auction")
+    ][0]
+    assert "evm" in auction_data
+    assert "bytecode" in auction_data["evm"]
+    assert "deployedBytecode" in auction_data["evm"]
 
 
 def test_compiler_creates_valid_registry_package_and_deployment(twig_deployer, w3):

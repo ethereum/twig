@@ -1,6 +1,6 @@
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Tuple
 
-from eth_utils import to_tuple
+from eth_utils import to_dict, to_tuple
 
 from ethpm.tools import builder as b
 from vyper import compile_code
@@ -24,9 +24,16 @@ def generate_contract_types(
         yield b.contract_type(contract_type, compiler_output)
 
 
-def create_raw_asset_data(source: str) -> Dict[str, Any]:
-    out = compile_code(source, ["bytecode", "abi"])
-    return {
-        "abi": out["abi"],
-        "evm": {"bytecode": {"object": out["bytecode"], "linkReferences": {}}},
-    }
+@to_dict
+def create_raw_asset_data(source: str) -> Iterable[Tuple[str, Any]]:
+    out = compile_code(source, ["abi", "bytecode", "bytecode_runtime"])
+    yield "abi", out["abi"]
+    yield "evm", create_raw_bytecode_object(out)
+
+
+@to_dict
+def create_raw_bytecode_object(
+    compiler_output: Dict[str, Any]
+) -> Iterable[Tuple[str, Dict[str, Any]]]:
+    yield "bytecode", {"object": compiler_output["bytecode"]}
+    yield "deployedBytecode", {"object": compiler_output["bytecode_runtime"]}

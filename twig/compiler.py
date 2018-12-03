@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, Dict, Sequence
 
 from twig.backends import VyperBackend
+from twig.exceptions import CompilerError
 from twig.utils.compiler import generate_contract_types, generate_inline_sources
 
 
@@ -12,6 +13,10 @@ class Compiler:
         self.output: Dict[str, Any] = None
 
     def compile(self) -> None:
+        if self.output:
+            raise CompilerError(
+                "This instance of Compiler already contains compiler output."
+            )
         self.output = self.backend.compile(self.sources)
 
     def get_contract_types(self) -> Dict[str, Any]:

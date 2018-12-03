@@ -28,5 +28,5 @@ def tmp_contracts(tmpdir):
 
 
 @pytest.fixture
-def deployer(twig_deployer):
-    return twig_deployer(CONTRACTS_DIR)
+def deployer(vy_deployer):
+    return vy_deployer(CONTRACTS_DIR)

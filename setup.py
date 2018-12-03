@@ -50,8 +50,8 @@ setup(
     install_requires=[
         "eth-utils>=1,<2",
         "eth-typing>=1,<2",
-        "ethpm>=0.1.4a7,<1",
-        "pytest-ethereum>=0.1.3a1,<1",
+        "ethpm>=0.1.4a8,<1",
+        "pytest-ethereum>=0.1.3a3,<1",
         "web3[tester]>=4.7,<5",
         "vyper>=0.1.0b5,<1",
     ],
