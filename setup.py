@@ -48,10 +48,11 @@ setup(
     url='https://github.com/ethereum/twig',
     include_package_data=True,
     install_requires=[
+        "eth-abi>=1.2.0,<1.3.0",
         "eth-utils>=1,<2",
         "eth-typing>=1,<2",
         "ethpm>=0.1.4a8,<1",
-        "pytest-ethereum>=0.1.3a3,<1",
+        "pytest-ethereum>=0.1.3a5,<1",
         "web3[tester]>=4.7,<5",
         "vyper>=0.1.0b5,<1",
     ],

@@ -4,9 +4,9 @@ import pytest
 
 
 @pytest.fixture
-def name_registry_package(deployer):
+def name_registry_package(twig_deployer):
     # returns an ethpm.package instance loaded with a "name_registry" deployment
-    return deployer.deploy("name_registry")
+    return twig_deployer.deploy("name_registry")
 
 
 @pytest.fixture
