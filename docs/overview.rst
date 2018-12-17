@@ -33,9 +33,9 @@ Project setup
 .. code:: python
 
    @pytest.fixture
-   def my_contract_package(deployer):
+   def my_contract_package(twig_deployer):
        # returns an ethpm.Package instance loaded with a "my_contract" deployment on the ethpm.Package.w3 instance
-       return deployer.deploy("my_contract")
+       return twig_deployer.deploy("my_contract")
 
    @pytest.fixture
    def my_contract(my_contract_package):

@@ -5,5 +5,4 @@ SOURCES_GLOB = "**/*.vy"
 
 
 def collect_sources(path: Path, glob: str = SOURCES_GLOB) -> Iterable[Path]:
-    all_sources = Path(path).glob(glob)
-    return all_sources
+    return Path(path).glob(glob)
