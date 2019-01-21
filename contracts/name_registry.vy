@@ -1,5 +1,4 @@
-registry: address[bytes[100]]
-
+registry: map(bytes[100], address)
 
 @public
 def register(name: bytes[100], owner: address):

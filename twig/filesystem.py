@@ -5,4 +5,7 @@ SOURCES_GLOB = "**/*.vy"
 
 
 def collect_sources(path: Path, glob: str = SOURCES_GLOB) -> Iterable[Path]:
-    return Path(path).glob(glob)
+    if path.is_dir():
+        return Path(path).glob(glob)
+    else:
+        raise FileNotFoundError(f"{path} is not a valid directory.")

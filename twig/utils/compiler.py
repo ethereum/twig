@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Dict, Iterable, Tuple
 
 from eth_utils import to_dict, to_tuple
@@ -8,11 +9,13 @@ from vyper import compile_code
 
 @to_tuple
 def generate_inline_sources(
-    compiler_output: Dict[str, Any]
+    compiler_output: Dict[str, Any], sources_dir: Path
 ) -> Iterable[Dict[str, str]]:
     for path in compiler_output.keys():
         contract_type = path.split("/")[-1].split(".")[0]
-        yield b.inline_source(contract_type, compiler_output)
+        yield b.inline_source(
+            contract_type, compiler_output, package_root_dir=sources_dir
+        )
 
 
 @to_tuple

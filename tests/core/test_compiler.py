@@ -9,8 +9,8 @@ logging.getLogger("evm").setLevel(logging.INFO)
 
 
 @pytest.fixture
-def compiler(test_contracts):
-    return Compiler(sources=test_contracts, backend=VyperBackend())
+def compiler(test_contracts_dir):
+    return Compiler(sources_dir=test_contracts_dir, backend=VyperBackend())
 
 
 def test_compiler(compiler):
@@ -43,6 +43,6 @@ def test_compiler_creates_valid_auction_package_and_deployment(test_deployer, w3
     )
     w3 = auction_package.w3
     auction_contract = auction_package.deployments.get_instance("simple_open_auction")
-    auction_start = auction_contract.functions.auction_start().call()
-    auction_end = auction_contract.functions.auction_end().call()
+    auction_start = auction_contract.functions.auctionStart().call()
+    auction_end = auction_contract.functions.auctionEnd().call()
     assert auction_end - auction_start == 100
