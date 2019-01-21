@@ -6,7 +6,6 @@ import pytest
 from twig import CONTRACTS_DIR
 from twig.backends import VyperBackend
 from twig.compiler import Compiler
-from twig.filesystem import collect_sources
 from web3 import Web3
 
 pytest_plugins = ["pytest_ethereum.plugins"]
@@ -25,16 +24,11 @@ def test_contracts_dir():
 
 
 @pytest.fixture
-def test_contracts(test_contracts_dir):
-    return collect_sources(test_contracts_dir)
-
-
-@pytest.fixture
-def test_contracts_manifest(tmpdir, test_contracts):
+def test_contracts_manifest(tmpdir, test_contracts_dir):
     vyper_backend = VyperBackend()
     p = tmpdir.mkdir("test_contracts")
     tmp = p.join("1.0.0.json")
-    manifest = Compiler(test_contracts, vyper_backend).get_simple_manifest(
+    manifest = Compiler(test_contracts_dir, vyper_backend).get_simple_manifest(
         "twig", "1.0.0"
     )
     tmp.write(json.dumps(manifest, sort_keys=True, separators=(",", ":")))
@@ -44,10 +38,9 @@ def test_contracts_manifest(tmpdir, test_contracts):
 @pytest.fixture
 def twig_contracts_manifest(tmpdir):
     vyper_backend = VyperBackend()
-    twig_contracts = collect_sources(CONTRACTS_DIR)
     p = tmpdir.mkdir("twig_contracts")
     tmp = p.join("1.0.0.json")
-    manifest = Compiler(twig_contracts, vyper_backend).get_simple_manifest(
+    manifest = Compiler(CONTRACTS_DIR, vyper_backend).get_simple_manifest(
         "twig", "1.0.0"
     )
     tmp.write(json.dumps(manifest, sort_keys=True, separators=(",", ":")))

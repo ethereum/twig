@@ -3,15 +3,18 @@
 # Auction params
 # Beneficiary receives money from the highest bidder
 beneficiary: public(address)
-auction_start: public(timestamp)
-auction_end: public(timestamp)
+auctionStart: public(timestamp)
+auctionEnd: public(timestamp)
 
 # Current state of auction
-highest_bidder: public(address)
-highest_bid: public(wei_value)
+highestBidder: public(address)
+highestBid: public(wei_value)
 
 # Set to true at the end, disallows any change
 ended: public(bool)
+
+# Keep track of refunded bids so we can follow the withdraw pattern
+pendingReturns: public(map(address, wei_value))
 
 # Create a simple auction with `_bidding_time`
 # seconds bidding time on behalf of the
@@ -19,8 +22,8 @@ ended: public(bool)
 @public
 def __init__(_beneficiary: address, _bidding_time: timedelta):
     self.beneficiary = _beneficiary
-    self.auction_start = block.timestamp
-    self.auction_end = self.auction_start + _bidding_time
+    self.auctionStart = block.timestamp
+    self.auctionEnd = self.auctionStart + _bidding_time
 
 # Bid on the auction with the value sent
 # together with this transaction.
@@ -30,20 +33,29 @@ def __init__(_beneficiary: address, _bidding_time: timedelta):
 @payable
 def bid():
     # Check if bidding period is over.
-    assert block.timestamp < self.auction_end
+    assert block.timestamp < self.auctionEnd
     # Check if bid is high enough
-    assert msg.value > self.highest_bid
-    if not self.highest_bid == 0:
-        # Sends money back to the previous highest bidder
-        send(self.highest_bidder, self.highest_bid)
-    self.highest_bidder = msg.sender
-    self.highest_bid = msg.value
+    assert msg.value > self.highestBid
+    # Track the refund for the previous high bidder
+    self.pendingReturns[self.highestBidder] += self.highestBid
+    # Track new high bid
+    self.highestBidder = msg.sender
+    self.highestBid = msg.value
 
+# Withdraw a previously refunded bid. The withdraw pattern is
+# used here to avoid a security issue. If refunds were directly
+# sent as part of bid(), a malicious bidding contract could block
+# those refunds and thus block new higher bids from coming in.
+@public
+def withdraw():
+    pending_amount: wei_value = self.pendingReturns[msg.sender]
+    self.pendingReturns[msg.sender] = 0
+    send(msg.sender, pending_amount)
 
 # End the auction and send the highest bid
 # to the beneficiary.
 @public
-def end_auction():
+def endAuction():
     # It is a good guideline to structure functions that interact
     # with other contracts (i.e. they call functions or send Ether)
     # into three phases:
@@ -59,7 +71,7 @@ def end_auction():
 
     # 1. Conditions
     # Check if auction endtime has been reached
-    assert block.timestamp >= self.auction_end
+    assert block.timestamp >= self.auctionEnd
     # Check if this function has already been called
     assert not self.ended
 
@@ -67,4 +79,4 @@ def end_auction():
     self.ended = True
 
     # 3. Interaction
-    send(self.beneficiary, self.highest_bid)
+    send(self.beneficiary, self.highestBid)
